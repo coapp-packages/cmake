@@ -1,0 +1,66 @@
+#product-info  {
+    product-name: "cmake";
+    version: "2.8.5";
+    original-source-location: "git://cmake.org/cmake.git";
+    original-source-website: "http://www.cmake.org/cmake/resources/software.html";
+    license: "Modified BSD License";
+    packager: "Vincent Povirk <madewokherd@gmail.com>";
+}
+
+// We actually build cmake 4 times here: twice with mingw to bootstrap it,
+// once with mingw to get a build that statically links libgcc/libstdc++
+// (so it'll function outside the mingw environment), and once with VC.
+// Hopefully, trace and mkspec will allow us to skip the first three.
+
+mingw {
+    compiler: "mingw";
+
+    targets:
+    {
+        "mingw/bin/cmake.exe",
+        "mingw/bin/ctest.exe",
+        "mingw/bin/cpack.exe",
+    };
+
+    build-command:
+    @"
+        mkdir mingw-bootstrap
+        cd mingw-bootstrap
+        sh ../bootstrap
+        make
+
+        cd ..
+        mkdir mingw
+        cd mingw
+        ..\mingw-bootstrap\bin\cmake .. ""-DCMAKE_EXE_LINKER_FLAGS=-static-libgcc -static -lstdc++ -dynamic"" ""-GUnix Makefiles""
+        make
+
+        cd ..
+		rmdir /Q /S mingw-bootstrap 2>NUL
+    ";
+
+    clean-command: @"rmdir /Q /S mingw 2>NUL";
+}
+
+exe {
+    compiler: "vc10";
+
+    uses:mingw=@".";
+
+    targets:
+    {
+        "exe/bin/cmake.exe",
+        "exe/bin/ctest.exe",
+        "exe/bin/cpack.exe",
+    };
+
+    build-command:
+    @"
+        mkdir exe
+        cd exe
+        ..\mingw\bin\cmake .. ""-GNMake Makefiles""
+        nmake
+    ";
+
+    clean-command: @"rmdir /Q /S exe 2>NUL";
+}
