@@ -112,11 +112,16 @@ protected:
   // Return the a string with -F flags on apple
   std::string GetFrameworkFlags();
 
+  void AppendFortranFormatFlags(std::string& flags, cmSourceFile& source);
+
   // append intertarget dependencies
   void AppendTargetDepends(std::vector<std::string>& depends);
 
   // Append link rule dependencies (objects, etc.).
   void AppendLinkDepends(std::vector<std::string>& depends);
+
+  // Lookup the link rule for this target.
+  std::string GetLinkRule(const char* linkRuleVar);
 
   /** In order to support parallel builds for custom commands with
       multiple outputs the outputs are given a serial order, and only

@@ -62,7 +62,7 @@ public:
                     SHARED_LIBRARY, MODULE_LIBRARY, UTILITY, GLOBAL_TARGET,
                     INSTALL_FILES, INSTALL_PROGRAMS, INSTALL_DIRECTORY,
                     UNKNOWN_LIBRARY};
-  static const char* TargetTypeNames[];
+  static const char* GetTargetTypeName(TargetType targetType);
   enum CustomCommandType { PRE_BUILD, PRE_LINK, POST_BUILD };
 
   /**
@@ -224,7 +224,7 @@ public:
 
   ///! Set/Get a property of this target file
   void SetProperty(const char *prop, const char *value);
-  void AppendProperty(const char* prop, const char* value);
+  void AppendProperty(const char* prop, const char* value,bool asString=false);
   const char *GetProperty(const char *prop);
   const char *GetProperty(const char *prop, cmProperty::ScopeType scope);
   bool GetPropertyAsBool(const char *prop);
@@ -369,6 +369,14 @@ public:
                           std::string& impName,
                           std::string& pdbName, const char* config);
 
+  /** Does this target have a GNU implib to convert to MS format?  */
+  bool HasImplibGNUtoMS();
+
+  /** Convert the given GNU import library name (.dll.a) to a name with a new
+      extension (.lib or ${CMAKE_IMPORT_LIBRARY_SUFFIX}).  */
+  bool GetImplibGNUtoMS(std::string const& gnuName, std::string& out,
+                        const char* newExt = 0);
+
   /** Add the target output files to the global generator manifest.  */
   void GenerateTargetManifest(const char* config);
 
@@ -445,6 +453,10 @@ public:
 
   /** Get a build-tree directory in which to place target support files.  */
   std::string GetSupportDirectory() const;
+
+  /** Return whether this target uses the default value for its output
+      directory.  */
+  bool UsesDefaultOutputDir(const char* config, bool implib);
 
 private:
   /**
@@ -553,12 +565,13 @@ private:
   cmPropertyMap Properties;
   LinkLibraryVectorType OriginalLinkLibraries;
   bool DLLPlatform;
+  bool IsApple;
   bool IsImportedTarget;
 
   // Cache target output paths for each configuration.
   struct OutputInfo;
   OutputInfo const* GetOutputInfo(const char* config);
-  void ComputeOutputDir(const char* config, bool implib, std::string& out);
+  bool ComputeOutputDir(const char* config, bool implib, std::string& out);
 
   // Cache import information from properties for each configuration.
   struct ImportInfo;
@@ -591,6 +604,12 @@ private:
   cmTargetInternalPointer Internal;
 
   void ConstructSourceFileFlags();
+  void ComputeVersionedName(std::string& vName,
+                            std::string const& prefix,
+                            std::string const& base,
+                            std::string const& suffix,
+                            std::string const& name,
+                            const char* version);
 };
 
 typedef std::map<cmStdString,cmTarget> cmTargets;

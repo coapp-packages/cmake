@@ -126,7 +126,7 @@ void cmDocumentVariables::DefineVariables(cmake* cm)
      "This variable is set to the program that will be"
      " needed to build the output of CMake.   If the "
      "generator selected was Visual Studio 6, the "
-     "CMAKE_MAKE_PROGRAM will be set to msdev, for "
+     "CMAKE_BUILD_TOOL will be set to msdev, for "
      "Unix makefiles it will be set to make or gmake, "
      "and for Visual Studio 7 it set to devenv.  For "
      "Nmake Makefiles the value is nmake. This can be "
@@ -508,6 +508,19 @@ void cmDocumentVariables::DefineVariables(cmake* cm)
      "Variables That Change Behavior");
 
     cm->DefineProperty
+    ("CMAKE_AUTOMOC_RELAXED_MODE",  cmProperty::VARIABLE,
+     "Switch between strict and relaxed automoc mode.",
+     "By default, automoc behaves exactly as described in the documentation "
+     "of the AUTOMOC target property.  "
+     "When set to TRUE, it accepts more input and tries to find the correct "
+     "input file for moc even if it differs from the documented behaviour. "
+     "In this mode it e.g. also checks whether a header file is intended to "
+     "be processed by moc when a \"foo.moc\" file has been included.\n"
+     "Relaxed mode has to be enabled for KDE4 compatibility.",
+     false,
+     "Variables That Change Behavior");
+
+    cm->DefineProperty
     ("CMAKE_FIND_LIBRARY_PREFIXES",  cmProperty::VARIABLE,
      "Prefixes to prepend when looking for libraries.",
      "This specifies what prefixes to add to library names when "
@@ -716,6 +729,20 @@ void cmDocumentVariables::DefineVariables(cmake* cm)
      "standard directories for the current system. It is NOT intended to be "
      "modified by the project, use CMAKE_PROGRAM_PATH for this. See also "
      "CMAKE_SYSTEM_PREFIX_PATH.", false,
+     "Variables That Change Behavior");
+
+  cm->DefineProperty
+    ("CMAKE_DISABLE_FIND_PACKAGE_<PackageName>", cmProperty::VARIABLE,
+     "Variable for disabling find_package() calls.",
+     "Every non-REQUIRED find_package() call in a project can be disabled "
+     "by setting the variable CMAKE_DISABLE_FIND_PACKAGE_<PackageName> to "
+     "TRUE. This can be used to build a project without an optional package, "
+     "although that package is installed.\n"
+     "This switch should be used during the initial CMake run. Otherwise if "
+     "the package has already been found in a previous CMake run, the "
+     "variables which have been stored in the cache will still be there. "
+     "In the case it is recommended to remove the cache variables for "
+     "this package from the cache using the cache editor or cmake -U", false,
      "Variables That Change Behavior");
 
   cm->DefineProperty
@@ -939,7 +966,7 @@ void cmDocumentVariables::DefineVariables(cmake* cm)
   cm->DefineProperty
     ("WIN32", cmProperty::VARIABLE,
      "True on windows systems, including win64.",
-     "Set to true when the target system is Windows and on cygwin.",false,
+     "Set to true when the target system is Windows.",false,
      "Variables That Describe the System");
 
   cm->DefineProperty
@@ -1035,6 +1062,15 @@ void cmDocumentVariables::DefineVariables(cmake* cm)
      "Variables that Control the Build");
 
   cm->DefineProperty
+    ("CMAKE_Fortran_FORMAT", cmProperty::VARIABLE,
+     "Set to FIXED or FREE to indicate the Fortran source layout.",
+     "This variable is used to initialize the Fortran_FORMAT "
+     "property on all the targets. "
+     "See that target property for additional information.",
+     false,
+     "Variables that Control the Build");
+
+  cm->DefineProperty
     ("CMAKE_Fortran_MODULE_DIRECTORY", cmProperty::VARIABLE,
      "Fortran module output directory.",
      "This variable is used to initialize the "
@@ -1066,6 +1102,33 @@ void cmDocumentVariables::DefineVariables(cmake* cm)
      "Where to put all the RUNTIME targets when built.",
      "This variable is used to initialize the "
      "RUNTIME_OUTPUT_DIRECTORY property on all the targets. "
+     "See that target property for additional information.",
+     false,
+     "Variables that Control the Build");
+
+  cm->DefineProperty
+    ("CMAKE_AUTOMOC", cmProperty::VARIABLE,
+     "Whether to handle moc automatically for Qt targets.",
+     "This variable is used to initialize the "
+     "AUTOMOC property on all the targets. "
+     "See that target property for additional information.",
+     false,
+     "Variables that Control the Build");
+
+  cm->DefineProperty
+    ("CMAKE_AUTOMOC_MOC_OPTIONS", cmProperty::VARIABLE,
+     "Additional options for moc when using automoc (see CMAKE_AUTOMOC).",
+     "This variable is used to initialize the "
+     "AUTOMOC_MOC_OPTIONS property on all the targets. "
+     "See that target property for additional information.",
+     false,
+     "Variables that Control the Build");
+
+  cm->DefineProperty
+    ("CMAKE_GNUtoMS", cmProperty::VARIABLE,
+     "Convert GNU import libraries (.dll.a) to MS format (.lib).",
+     "This variable is used to initialize the GNUtoMS property on targets "
+     "when they are created.  "
      "See that target property for additional information.",
      false,
      "Variables that Control the Build");
@@ -1187,7 +1250,14 @@ void cmDocumentVariables::DefineVariables(cmake* cm)
      "Therefore a specific build configuration must be chosen even "
      "if the generated build system supports multiple configurations.",false,
      "Variables that Control the Build");
-
+  cm->DefineProperty
+    ("CMAKE_LINK_INTERFACE_LIBRARIES", cmProperty::VARIABLE,
+     "Default value for LINK_INTERFACE_LIBRARIES of targets.",
+     "This variable is used to initialize the "
+     "LINK_INTERFACE_LIBRARIES property on all the targets. "
+     "See that target property for additional information.",
+     false,
+     "Variables that Control the Build");
 
 //   Variables defined when the a language is enabled These variables will
 // also be defined whenever CMake has loaded its support for compiling (LANG)
@@ -1466,6 +1536,8 @@ void cmDocumentVariables::DefineVariables(cmake* cm)
   cm->DefineProperty("CMAKE_<LANG>_COMPILER_ENV_VAR",
                      cmProperty::VARIABLE,0,0);
   cm->DefineProperty("CMAKE_<LANG>_COMPILER_ID_RUN",
+                     cmProperty::VARIABLE,0,0);
+  cm->DefineProperty("CMAKE_<LANG>_ABI_FILES",
                      cmProperty::VARIABLE,0,0);
   cm->DefineProperty("CMAKE_<LANG>_CREATE_ASSEMBLY_SOURCE",
                      cmProperty::VARIABLE,0,0);
