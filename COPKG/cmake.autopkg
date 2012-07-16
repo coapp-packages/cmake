@@ -1,0 +1,109 @@
+@import "version.inc";
+@import "cmake.inc" ;
+@import "outercurve.inc";
+
+#define { 
+    flavor: "${comp??vc10}"; 
+    arch : "${plat??x86}";
+}
+
+package {
+    name: "cmake";
+    version: "${package-version}";
+    arch : "${arch}";
+
+    display-name: "cmake";
+    location: "http://coapp.org/repository/${OutputFilename}";
+
+    feed: "http://coapp.org/repository/packages.atom.xml";
+    publisher: "CoApp Project";
+}
+
+license[BSD] {
+    license-type: "BSD";
+	license-url: "http://www.cmake.org/cmake/project/license.html";
+	license: @"..\Copyright.txt";
+}
+
+requires {
+    package: @"zlib[${flavor}]-1.2.5-${Package.Architecture}-1e373a58e25250cb";
+    package: @"libcurl[${flavor}]-7.21.7-${Package.Architecture}-1e373a58e25250cb";
+    package: @"libbz2[${flavor}]-1.0.6-${Package.Architecture}-1e373a58e25250cb";
+    package: @"expat[${flavor}]-2.1.0-${Package.Architecture}-1e373a58e25250cb";
+    package: @"openssl[${flavor}]-1.0.0-${Package.Architecture}-1e373a58e25250cb";
+}
+
+metadata {  
+    summary: "CMake build system"; // or a more user-friendly name
+    description: @"CMake, the cross-platform, open-source build system.";
+    author-version : "${author-version}"; // may contain alphanumeric characters, not limited to 4-part version
+    bug-tracker: "https://github.com/coapp-packages/cmake/issues";
+    stability : "0"; // -100 to 100, 0 is considered "normal"/stable, higher is more stable
+    licenses : {
+        BSD
+    };
+}
+
+signing {
+    attributes : {
+        company="Outercurve Foundation",
+        description="cmake Compression Program",
+        product-name="cmake",
+        product-version="${package-version}",
+        file-version="${package-version}",
+    };
+
+    replace-signature: true; 
+    include: { 
+        exes
+    };    
+}
+
+application {
+    include : {
+        exes,
+        docs,
+        mods,
+    };
+}
+
+package-composition {
+    symlinks : { 
+        exes => @"${bin}\${each.Name}" = @"${packagedir}\bin\${each.Name}";
+    };
+}
+
+files[exes] {
+    root: @"..\output\${flavor}\${arch}\bin";
+
+    include: {
+        "*.exe",
+    };
+
+    trim-path: all;
+    destination: @".\bin";
+};
+
+files[docs] {
+    root: @"..\output\${flavor}\${arch}\Docs";
+
+    include: {
+        "*",
+    };
+
+    trim-path: all;
+    destination: @".\doc";
+};
+
+files[mods] {
+    root: @"..\Modules";
+
+    include: {
+        "**",
+    };
+
+    trim-path: minimal;
+    destination: @".\share\Modules";
+};
+
+

@@ -473,23 +473,72 @@ ENDIF(APPLE)
 # Build CMake executable
 ADD_EXECUTABLE(cmake cmakemain.cxx)
 TARGET_LINK_LIBRARIES(cmake CMakeLib)
+IF(WIN32)
+  IF(NOT UNIX)
+    ADD_CUSTOM_COMMAND(
+        TARGET cmake
+        POST_BUILD
+        COMMAND simplesigner.exe --reference-assembly="libcurl[$ENV{COMP}], Version=7.21.7.11, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cmake.exe
+        COMMAND simplesigner.exe --reference-assembly="libbz2[$ENV{COMP}], Version=1.0.6.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cmake.exe
+        COMMAND simplesigner.exe --reference-assembly="expat[$ENV{COMP}], Version=2.1.0.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cmake.exe
+        COMMAND simplesigner.exe --reference-assembly="openssl[$ENV{COMP}], Version=1.0.0.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cmake.exe
+        COMMENT "Adding manifest for cmake.exe ..."
+    )
+  ENDIF(NOT UNIX)
+ENDIF(WIN32)
 
 # Build special executable for running programs on Windows 98
 IF(WIN32)
   IF(NOT UNIX)
     ADD_EXECUTABLE(cmw9xcom cmw9xcom.cxx)
     TARGET_LINK_LIBRARIES(cmw9xcom CMakeLib)
-    INSTALL_TARGETS(/bin cmw9xcom)
+    ADD_CUSTOM_COMMAND(
+        TARGET cmw9xcom
+        POST_BUILD
+        COMMAND simplesigner.exe --reference-assembly="libcurl[$ENV{COMP}], Version=7.21.7.11, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cmw9xcom.exe
+        COMMAND simplesigner.exe --reference-assembly="libbz2[$ENV{COMP}], Version=1.0.6.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cmw9xcom.exe
+        COMMAND simplesigner.exe --reference-assembly="expat[$ENV{COMP}], Version=2.1.0.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cmw9xcom.exe
+        COMMAND simplesigner.exe --reference-assembly="openssl[$ENV{COMP}], Version=1.0.0.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cmw9xcom.exe
+        COMMENT "Adding manifest for cmw9xcom.exe ..."
+    )
+INSTALL_TARGETS(/bin cmw9xcom)
   ENDIF(NOT UNIX)
 ENDIF(WIN32)
 
 # Build CTest executable
 ADD_EXECUTABLE(ctest ctest.cxx)
 TARGET_LINK_LIBRARIES(ctest CTestLib)
+IF(WIN32)
+  IF(NOT UNIX)
+    ADD_CUSTOM_COMMAND(
+        TARGET ctest
+        POST_BUILD
+        COMMAND simplesigner.exe --reference-assembly="zlib[$ENV{COMP}], Version=1.2.5.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/ctest.exe
+        COMMAND simplesigner.exe --reference-assembly="libcurl[$ENV{COMP}], Version=7.21.7.11, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/ctest.exe
+        COMMAND simplesigner.exe --reference-assembly="libbz2[$ENV{COMP}], Version=1.0.6.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/ctest.exe
+        COMMAND simplesigner.exe --reference-assembly="expat[$ENV{COMP}], Version=2.1.0.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/ctest.exe
+        COMMAND simplesigner.exe --reference-assembly="openssl[$ENV{COMP}], Version=1.0.0.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/ctest.exe
+        COMMENT "Adding manifest for ctest.exe ..."
+    )
+  ENDIF(NOT UNIX)
+ENDIF(WIN32)
 
 # Build CPack executable
 ADD_EXECUTABLE(cpack CPack/cpack.cxx)
 TARGET_LINK_LIBRARIES(cpack CPackLib)
+IF(WIN32)
+  IF(NOT UNIX)
+    ADD_CUSTOM_COMMAND(
+        TARGET cpack
+        POST_BUILD
+        COMMAND simplesigner.exe --reference-assembly="libcurl[$ENV{COMP}], Version=7.21.7.11, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cpack.exe
+        COMMAND simplesigner.exe --reference-assembly="libbz2[$ENV{COMP}], Version=1.0.6.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cpack.exe
+        COMMAND simplesigner.exe --reference-assembly="expat[$ENV{COMP}], Version=2.1.0.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cpack.exe
+        COMMAND simplesigner.exe --reference-assembly="openssl[$ENV{COMP}], Version=1.0.0.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=$ENV{PLAT}" ../bin/cpack.exe
+        COMMENT "Adding manifest for cpack.exe ..."
+    )
+  ENDIF(NOT UNIX)
+ENDIF(WIN32)
 
 # Curses GUI
 IF(BUILD_CursesDialog)

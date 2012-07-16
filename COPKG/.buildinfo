@@ -1,3 +1,9 @@
+@import "version.inc";
+
+#define {
+    NewVersion : "${package-version++}";
+}
+
 #product-info  {
     product-name: "cmake";
     version: "2.8.5";
@@ -7,60 +13,105 @@
     packager: "Vincent Povirk <madewokherd@gmail.com>";
 }
 
-// We actually build cmake 4 times here: twice with mingw to bootstrap it,
-// once with mingw to get a build that statically links libgcc/libstdc++
-// (so it'll function outside the mingw environment), and once with VC.
-// Hopefully, trace and mkspec will allow us to skip the first three.
-
-mingw {
-    compiler: "mingw";
-
-    targets:
-    {
-        "mingw/bin/cmake.exe",
-        "mingw/bin/ctest.exe",
-        "mingw/bin/cpack.exe",
-    };
-
-    build-command:
-    @"
-        mkdir mingw-bootstrap
-        cd mingw-bootstrap
-        sh ../bootstrap
-        make
-
-        cd ..
-        mkdir mingw
-        cd mingw
-        ..\mingw-bootstrap\bin\cmake .. ""-DCMAKE_EXE_LINKER_FLAGS=-static-libgcc -static -lstdc++ -dynamic"" ""-GUnix Makefiles""
-        make
-
-        cd ..
-		rmdir /Q /S mingw-bootstrap 2>NUL
-    ";
-
-    clean-command: @"rmdir /Q /S mingw 2>NUL";
+test {
+    uses: release;
 }
 
-exe {
-    compiler: "vc10";
-
-    uses:mingw=@".";
-
-    targets:
-    {
-        "exe/bin/cmake.exe",
-        "exe/bin/ctest.exe",
-        "exe/bin/cpack.exe",
+package {
+    set: {
+        COMP="${COMP??vc10}";
+        PLAT="${PLAT??x86, x64}";
     };
+    uses: {
+        update-version,
+        release
+    };
+    build-command: @"
+        pushd COPKG
+        for %%A in (${COMP}) do (
+            for %%B in (${PLAT}) do (
+                autopackage --comp=%%A --plat=%%B cmake.autopkg  || goto failed
+            )
+        )
+        popd
+    ";
+	clean-command: @"del COPKG\*.msi COPKG\*.wixpdb";
+}
 
-    build-command:
-    @"
-        mkdir exe
-        cd exe
-        ..\mingw\bin\cmake .. ""-GNMake Makefiles""
+update-version {
+    build-command : @"
+        REM auto-increment version.inc file...
+        if ""${noversion}"" == ""true"" goto :endver
+        pushd COPKG
+        setlocal EnableDelayedExpansion
+        set VERSTRING=#define { package-version: ${NewVersion}; }
+        echo !VERSTRING! > version.inc
+        popd
+        :endver
+    ";
+}
+
+release {
+    set: {
+        BldConf="${BldConf??Release}";
+        COMP="${COMP??vc10}";
+		PLAT="${PLAT??x86, x64}";
+        BUILT="${BUILT??false}";
+	};
+    build-command: @"
+        if ""${BUILT}"" equ ""true"" goto endrel
+        for %%A in (${COMP}) do (
+            for %%B in (${PLAT}) do (
+                ptk --COMP=%%A --PLAT=%%B base || goto failed
+            )
+        )
+        :endrel
+    ";
+};
+
+base {
+    set: {
+        COMP="${COMP??vc10}";
+        PLAT="${PLAT??x86}";
+        BldConf="${BldConf??Debug}";
+    };
+    
+    compiler: "${COMP}";
+    platform: "${PLAT}";
+    
+    targets: {
+        @"output\${COMP}\${PLAT}\bin\cmake.exe",
+        @"output\${COMP}\${PLAT}\bin\cpack.exe",
+        @"output\${COMP}\${PLAT}\bin\ctest.exe",
+    };
+    
+    requires: {
+        // @"cmake-2.8-1e373a58e25250cb",
+        @"zlib-dev[${COMP}]-1.2.5-${PLAT}-1e373a58e25250cb",
+        @"libcurl-dev[${COMP}]-7.21.7-${PLAT}-1e373a58e25250cb",
+        @"libbz2-dev[${COMP}]-1.0.6-${PLAT}-1e373a58e25250cb",
+        @"expat-dev[${COMP}]-2.1.0-${PLAT}-1e373a58e25250cb",
+        @"openssl[${COMP}]-1.0.0-${PLAT}-1e373a58e25250cb",
+    };
+    
+    build-command: @"
+        REM Add coapp packages to the dev paths...
+        set INCLUDE=%INCLUDE%;%ProgramData%\include;
+        set LIB=%LIB%;%ProgramData%\lib\${PLAT};
+        set LIBPATH=%LIBPATH%;%ProgramData%\lib\${PLAT};
+        
+        mkdir output\${COMP}\${PLAT}
+        pushd output\${COMP}\${PLAT}
+
+        REM this define will need to be added after we have a libarchive package (which requires cmake to build)
+        REM -DCMAKE_USE_SYSTEM_LIBARCHIVE:BOOL=ON/OFF
+        cmake -DCMAKE_BUILD_TYPE:STRING=${BldConf} -DCMAKE_USE_RELATIVE_PATHS:BOOL=ON -DCMAKE_USE_SYSTEM_BZIP2:BOOL=ON -DCMAKE_USE_SYSTEM_CURL:BOOL=ON -DCMAKE_USE_SYSTEM_EXPAT:BOOL=ON -DCMAKE_USE_SYSTEM_ZLIB:BOOL=ON -DCPACK_BINARY_NSIS:BOOL=OFF -DCPACK_SOURCE_ZIP:BOOL=OFF -DENABLE_TEST:BOOL=ON -DZLIB_INCLUDE_DIR:PATH='%ProgramData%\include\zlib' -DCURL_INCLUDE_DIR:PATH='%ProgramData%\include' -DCURL_LIBRARY:FILEPATH='%ProgramData%\lib\${PLAT}\libcurl.lib' -DLIBXML2_INCLUDE_DIR:PATH='%ProgramData%\include\libxml2' -DBZIP2_INCLUDE_DIR:PATH='%ProgramData%\include\libbz2' -DBZIP2_LIBRARIES:FILEPATH='%ProgramData%\lib\${PLAT}\libbz2.lib' -DEXPAT_INCLUDE_DIR:PATH='%ProgramData%\include\expat' -DEXPAT_LIBRARY:FILEPATH='%ProgramData%\lib\${PLAT}\libexpat.lib' -G ""NMake Makefiles"" ..\..\..
+
         nmake
     ";
-
-    clean-command: @"rmdir /Q /S exe 2>NUL";
+    
+    clean-command: @"
+        rd /s /q output\${COMP}\${PLAT}
+    ";
 }
+
