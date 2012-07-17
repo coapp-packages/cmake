@@ -86,7 +86,7 @@ base {
     };
     
     requires: {
-        // @"cmake-2.8-1e373a58e25250cb",
+        @"cmake-2.8-1e373a58e25250cb",
         @"zlib-dev[${COMP}]-1.2.5-${PLAT}-1e373a58e25250cb",
         @"libcurl-dev[${COMP}]-7.21.7-${PLAT}-1e373a58e25250cb",
         @"libbz2-dev[${COMP}]-1.0.6-${PLAT}-1e373a58e25250cb",
