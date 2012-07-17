@@ -105,9 +105,9 @@ base {
 
         REM this define will need to be added after we have a libarchive package (which requires cmake to build)
         REM -DCMAKE_USE_SYSTEM_LIBARCHIVE:BOOL=ON/OFF
-        cmake -DCMAKE_BUILD_TYPE:STRING=${BldConf} -DCMAKE_USE_RELATIVE_PATHS:BOOL=ON -DCMAKE_USE_SYSTEM_BZIP2:BOOL=ON -DCMAKE_USE_SYSTEM_CURL:BOOL=ON -DCMAKE_USE_SYSTEM_EXPAT:BOOL=ON -DCMAKE_USE_SYSTEM_ZLIB:BOOL=ON -DCPACK_BINARY_NSIS:BOOL=OFF -DCPACK_SOURCE_ZIP:BOOL=OFF -DENABLE_TEST:BOOL=ON -DZLIB_INCLUDE_DIR:PATH='%ProgramData%\include\zlib' -DCURL_INCLUDE_DIR:PATH='%ProgramData%\include' -DCURL_LIBRARY:FILEPATH='%ProgramData%\lib\${PLAT}\libcurl.lib' -DLIBXML2_INCLUDE_DIR:PATH='%ProgramData%\include\libxml2' -DBZIP2_INCLUDE_DIR:PATH='%ProgramData%\include\libbz2' -DBZIP2_LIBRARIES:FILEPATH='%ProgramData%\lib\${PLAT}\libbz2.lib' -DEXPAT_INCLUDE_DIR:PATH='%ProgramData%\include\expat' -DEXPAT_LIBRARY:FILEPATH='%ProgramData%\lib\${PLAT}\libexpat.lib' -G ""NMake Makefiles"" ..\..\..
+        cmake -DCMAKE_BUILD_TYPE:STRING=${BldConf} -DCMAKE_USE_RELATIVE_PATHS:BOOL=ON -DCMAKE_USE_SYSTEM_BZIP2:BOOL=ON -DCMAKE_USE_SYSTEM_CURL:BOOL=ON -DCMAKE_USE_SYSTEM_EXPAT:BOOL=ON -DCMAKE_USE_SYSTEM_ZLIB:BOOL=ON -DCPACK_BINARY_NSIS:BOOL=OFF -DCPACK_SOURCE_ZIP:BOOL=OFF -DENABLE_TEST:BOOL=ON -DZLIB_INCLUDE_DIR:PATH='%ProgramData%\include\zlib' -DCURL_INCLUDE_DIR:PATH='%ProgramData%\include' -DCURL_LIBRARY:FILEPATH='%ProgramData%\lib\${PLAT}\libcurl.lib' -DLIBXML2_INCLUDE_DIR:PATH='%ProgramData%\include\libxml2' -DBZIP2_INCLUDE_DIR:PATH='%ProgramData%\include\libbz2' -DBZIP2_LIBRARIES:FILEPATH='%ProgramData%\lib\${PLAT}\libbz2.lib' -DEXPAT_INCLUDE_DIR:PATH='%ProgramData%\include\expat' -DEXPAT_LIBRARY:FILEPATH='%ProgramData%\lib\${PLAT}\libexpat.lib' -G ""NMake Makefiles"" ..\..\.. || goto failed
 
-        nmake
+        nmake || goto failed
     ";
     
     clean-command: @"

@@ -64,12 +64,13 @@ application {
         exes,
         docs,
         mods,
+        templates,
     };
 }
 
 package-composition {
-    symlinks : { 
-        exes => @"${bin}\${each.Name}" = @"${packagedir}\bin\${each.Name}";
+    shortcuts : { 
+        exes => @"${bin}\${each.NameWithoutExtension}.lnk" = @"${packagedir}\${each.Name}";
     };
 }
 
@@ -81,17 +82,16 @@ files[exes] {
     };
 
     trim-path: all;
-    destination: @".\bin";
 };
 
 files[docs] {
     root: @"..\output\${flavor}\${arch}\Docs";
 
     include: {
-        "*",
+        "**",
     };
 
-    trim-path: all;
+    trim-path: minimal;
     destination: @".\doc";
 };
 
@@ -103,7 +103,18 @@ files[mods] {
     };
 
     trim-path: minimal;
-    destination: @".\share\Modules";
+    destination: @".\Modules";
+};
+
+files[templates] {
+    root: @"..\Templates";
+
+    include: {
+        "**",
+    };
+
+    trim-path: minimal;
+    destination: @".\Templates";
 };
 
 
